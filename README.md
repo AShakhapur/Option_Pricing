@@ -8,6 +8,7 @@ Option Pricing Project Guide:
 - Data Preparation
   - data_prep.rmd
  
-- Option Strategy #1
-- Option Strategy #2
-- Option Strategy #3
+- Option Strategy #1: Black-Scholes
+- Option Strategy #2: Binomial
+- Option Strategy #3: Monte-Carlo
+- Option Strategy #4: Implicit Bayesian
