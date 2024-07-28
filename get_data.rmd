@@ -5,7 +5,7 @@ library(tidyverse)
 library(quantmod)
 library(getopt)
 
-source('data_opts.r')
+source('data_funcs.r')
 ```
 
 
@@ -32,21 +32,29 @@ check_opts(tick, st, en)
 ```{r}
 
 apple_series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
-
+daily_returns <- (dailyReturn(apple_series))
+volatility(apple_series)
 ```
 
 
 # Data View
 ```{r}
-apple_df <- as.data.frame(apple_series) %>%
+
+daily_returns <- data.frame(dailyReturn(apple_series)) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates))
+
+apple_df <- as.data.frame(apple_series) %>%
+  rownames_to_column("Dates") %>%
+  mutate(Dates = ymd(Dates)) %>%
+  left_join(daily_returns, by = join_by(Dates))
 
 apple_df
 ```
 ```{r}
 
-getSymbols("aapl", auto.assign = F)
+volatility(apple_series, n=2)
+
 ```
 
 
