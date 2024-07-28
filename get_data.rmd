@@ -1,0 +1,54 @@
+
+# Libraries
+```{r}
+library(tidyverse)
+library(quantmod)
+library(getopt)
+
+source('data_opts.r')
+```
+
+
+# Data Import Options
+```{r}
+
+opts_list <- get_options()
+```
+
+## Checking Options
+```{r}
+opts_list 
+
+tick <- opts_list[1]
+st <- opts_list[2]
+en <- opts_list[3]
+
+check_opts(tick, st, en)
+```
+
+
+
+# Importing Data
+```{r}
+
+apple_series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
+
+```
+
+
+# Data View
+```{r}
+apple_df <- as.data.frame(apple_series) %>%
+  rownames_to_column("Dates") %>%
+  mutate(Dates = ymd(Dates))
+
+apple_df
+```
+```{r}
+
+getSymbols("aapl", auto.assign = F)
+```
+
+
+
+
