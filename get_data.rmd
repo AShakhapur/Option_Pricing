@@ -77,7 +77,7 @@ apple_df %>%
 
 ```
 
-# Saving Dataset
+# Saving Datasets
 ```{r}
 wd <- getwd()
 filename <- paste0(wd, "/stock_df.csv")
