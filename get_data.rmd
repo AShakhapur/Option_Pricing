@@ -37,12 +37,10 @@ apple_series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=
 
 daily_returns <- (dailyReturn(apple_series))
 
-divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en)) %>%
-  rownames_to_column(var = "Dates") %>%
-  group_by(year(Dates)) %>%
-  summarise(yearly_div = sum(`AAPL.div`))
+divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en))
+colnames(divs) <- "dividends"
 
-divs 
+divs
 ```
 
 
@@ -55,10 +53,27 @@ daily_returns <- data.frame(dailyReturn(apple_series)) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates))
 
+divs <- divs %>%
+  rownames_to_column(var = "Dates") %>%
+  group_by(year(Dates)) %>%
+  summarise(annual_div = sum(`dividends`)) %>%
+  rename(years = `year(Dates)`)
+
 apple_df <- as.data.frame(apple_series) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates)) %>%
-  left_join(daily_returns, by = join_by(Dates))
+  left_join(daily_returns, by = join_by(Dates)) %>%
+  mutate(years = year(Dates)) %>%
+  left_join(divs, by = join_by(years)) %>%
+  select(-years)
+
+colnames(apple_df)[2] <- "Open"
+colnames(apple_df)[3] <- "High"
+colnames(apple_df)[4] <- "Low"
+colnames(apple_df)[5] <- "Close"
+colnames(apple_df)[6] <- "Volume"
+colnames(apple_df)[7] <- "Adjusted"
+
 
 apple_df
 ```
@@ -70,11 +85,7 @@ apple_df <- apple_df %>%
   mutate(volatility = sd_returns*sqrt(252)) %>%
   ungroup() %>%
   select(-'year(Dates)') %>%
-  mutate(volatility_avg = mean(volatility)) #%>%
-  #mutate(Dividends = case_when(
-  #  year(Dates) =  
-  #  )
-  #)
+  mutate(volatility_avg = mean(volatility))
 
 apple_df
 ```
@@ -90,14 +101,9 @@ apple_df %>%
 
 apple_df %>%
   ggplot() +
-  geom_line(aes(x = Dates, y = AAPL.Close)) + 
+  geom_line(aes(x = Dates, y = Close)) + 
   theme_grey() +
   ggtitle('Scatterplot of Apple Close Prices over Selected Period') 
-
-apple_df %>%
-  ggplot() +
-  geom_line(aes(x = Dates, y = AAPL.Close)) +
-  theme_grey()
 
 ```
 
@@ -105,8 +111,8 @@ apple_df %>%
 ```{r}
 
 wd <- getwd()
-filename <- paste0(wd, "/stock_df.csv")
 
+filename <- paste0(wd, "/stock_df.csv")
 write.csv(apple_df, filename, row.names = F)
 
 ```

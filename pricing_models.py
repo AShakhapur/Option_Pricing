@@ -28,21 +28,23 @@ class pricing_models:
     def __get_options__(self): 
 
         bs_string = input("Would you like to run Black_Scholes Pricing (Y/N)\n")
-        bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
-        mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
-        imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
+        #bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
+        #mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
+        #imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
 
         self.black_scholes = self.__eval__(bs_string)
-        self.binomial = self.__eval__(bi_string)
-        self.monte_carlo = self.__eval__(mo_string)
-        self.implicit_bayesian = self.__eval__(imp_string)
+        #self.binomial = self.__eval__(bi_string)
+        #self.monte_carlo = self.__eval__(mo_string)
+        #self.implicit_bayesian = self.__eval__(imp_string)
 
     def __load_data__(self):
 
         try:
             self.stock_df = pd.read_csv("stock_df.csv")
+            self.stock_df['Dates'] = pd.to_datetime(self.stock_df['Dates'])
         except:
             print("\nNo Stock Dataframe Present\n")
+
 
         try:
             self.security_df = pd.read_csv("securities.csv")
@@ -84,19 +86,24 @@ class pricing_models:
     def __setup_bs__(self):
 
         S = self.stock_df.tail(1)['Close']
-        sigma = self.stock_df.tail(1)['Volatility']
+        sigma = self.stock_df.tail(1)['volatility_avg']
 
         r = 0.0415
         K = int(input("Set the Strike Price: "))
 
-        date_string = input("Set the Expiration Date (mm-dd-yyy): "), '%m/%d/%Y'
+
+        date_format = "%Y-%m-%d"
+        date_string = input("Set the Expiration Date (yyyy-mm-dd): ")
+
 
         try:
-            date_time = datetime.strptime(date_string)
-            if (date_time < self.stock_df['Dates'].max()):
-                sys.exit('Invalid DateTime')
+            date_time = datetime.strptime(date_string, date_format)
+
         except:
+            #print(date_time + " " + self.stock_df['Dates'].max())
+            #print("exception " + date_string)
             sys.exit('Invalid DateTime')
+
 
         r_string = input("Set the Risk-Free Rate (type NA for default): ")
         
