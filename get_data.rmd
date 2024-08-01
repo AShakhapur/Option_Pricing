@@ -55,6 +55,19 @@ apple_df <- as.data.frame(apple_series) %>%
 
 apple_df
 ```
+## Building Volatility
+```{r}
+apple_df <- apple_df %>% 
+  group_by(year(Dates)) %>%
+  mutate(sd_returns = sd(daily.returns)) %>%
+  mutate(volatility = sd_returns*sqrt(252)) %>%
+  ungroup() %>%
+  select(-'year(Dates)') %>%
+  mutate(volatility_avg = mean(volatility))
+
+apple_df
+```
+
 
 ## Data Views
 ```{r}
@@ -79,10 +92,12 @@ apple_df %>%
 
 # Saving Datasets
 ```{r}
+
 wd <- getwd()
 filename <- paste0(wd, "/stock_df.csv")
 
 write.csv(apple_df, filename, row.names = F)
+
 ```
 
 

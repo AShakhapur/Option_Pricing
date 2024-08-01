@@ -3,6 +3,8 @@
 # Libraries
 import pandas as pd
 import numpy as np
+from scipy.stats import norm
+from datetime import datetime
 
 
 # Class Definition
@@ -55,8 +57,47 @@ class pricing_models:
     
     def __run_bs__(self):
 
-        print("Running Black_Scholes_Merton Pricing Algorithm\n")
-        #print(self.stock_df)
+        #S = Asset_Price
+            # Closing Price
+
+        #K = Strike_Price
+            # Set Strike Price
+
+        #T = Time_Expiration
+            # Set Expiration Date
+
+        #r = Risk-Free rate
+            # Default is 0.0415 for the 10-year Treasury rate 
+            # on July 30, 2024
+
+        #sigma = Volatility
+            # Annualized standard deviation * sqrt(252)
+            # 252 trading days in a year 
+
+        #q = Annual Dividend Yield
+
+
+
+        print("\nRunning Black_Scholes_Merton Pricing Algorithm\n")
+
+        r = 0.0415
+
+        S = int(input("Set the Strike Price: "))
+
+        date_string = datetime.strptime(input("Set the Expiration Date (mm-dd-yyy): "), '%m/%d/%Y')
+
+        r_string = input("Set the Risk-Free Rate (type NA for default): ")
+
+        if (r_string != "NA"):
+            r = int(r_string)
+        
+        
+
+
+        print(self.stock_df)
+
+        
+
 
         
 
