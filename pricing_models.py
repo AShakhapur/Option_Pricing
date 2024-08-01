@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
+import sys as sys
 from datetime import datetime
 
 
@@ -76,23 +77,42 @@ class pricing_models:
 
         #q = Annual Dividend Yield
 
-
-
         print("\nRunning Black_Scholes_Merton Pricing Algorithm\n")
 
+        var_dict = self.__setup_bs__()
+
+    def __setup_bs__(self):
+
+        S = self.stock_df.tail(1)['Close']
+        sigma = self.stock_df.tail(1)['Volatility']
+
         r = 0.0415
+        K = int(input("Set the Strike Price: "))
 
-        S = int(input("Set the Strike Price: "))
+        date_string = input("Set the Expiration Date (mm-dd-yyy): "), '%m/%d/%Y'
 
-        date_string = datetime.strptime(input("Set the Expiration Date (mm-dd-yyy): "), '%m/%d/%Y')
+        try:
+            date_time = datetime.strptime(date_string)
+            if (date_time < self.stock_df['Dates'].max()):
+                sys.exit('Invalid DateTime')
+        except:
+            sys.exit('Invalid DateTime')
 
         r_string = input("Set the Risk-Free Rate (type NA for default): ")
-
+        
         if (r_string != "NA"):
-            r = int(r_string)
-        
-        
+            try:
+                r = int(r_string)
+            except:
+                sys.exit('Invalid Risk-Free Rate Value')
 
+        
+        var_dict = {"S": S, 
+                    "K": K, 
+                    "T": date_time,
+                    "r": r,
+                    "sigma": sigma,
+                    "q": 19090909}
 
         print(self.stock_df)
 

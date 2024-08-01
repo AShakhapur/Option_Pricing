@@ -34,8 +34,15 @@ check_opts(tick, st, en)
 ```{r}
 
 apple_series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
+
 daily_returns <- (dailyReturn(apple_series))
-volatility(apple_series)
+
+divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en)) %>%
+  rownames_to_column(var = "Dates") %>%
+  group_by(year(Dates)) %>%
+  summarise(yearly_div = sum(`AAPL.div`))
+
+divs 
 ```
 
 
@@ -55,7 +62,7 @@ apple_df <- as.data.frame(apple_series) %>%
 
 apple_df
 ```
-## Building Volatility
+## Data Processing
 ```{r}
 apple_df <- apple_df %>% 
   group_by(year(Dates)) %>%
@@ -63,7 +70,11 @@ apple_df <- apple_df %>%
   mutate(volatility = sd_returns*sqrt(252)) %>%
   ungroup() %>%
   select(-'year(Dates)') %>%
-  mutate(volatility_avg = mean(volatility))
+  mutate(volatility_avg = mean(volatility)) #%>%
+  #mutate(Dividends = case_when(
+  #  year(Dates) =  
+  #  )
+  #)
 
 apple_df
 ```
