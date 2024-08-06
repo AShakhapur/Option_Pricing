@@ -93,17 +93,19 @@ apple_df
 
 ## Data Views
 ```{r}
+
 apple_df %>%
   ggplot() +
   geom_histogram(aes(x = daily.returns), color = 'black', fill = 'blue') +
   theme_grey() +
   ggtitle('Histogram of Daily Returns over Selected Period')
 
+
 apple_df %>%
   ggplot() +
   geom_line(aes(x = Dates, y = Close)) + 
   theme_grey() +
-  ggtitle('Scatterplot of Apple Close Prices over Selected Period') 
+  ggtitle('Scatterplot of Apple Close Prices over Selected Period')
 
 ```
 

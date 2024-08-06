@@ -83,7 +83,9 @@ class pricing_models:
 
         var_dict = self.__setup_bs__()
 
+
     def __setup_bs__(self):
+
 
         S = self.stock_df.tail(1)['Close']
         sigma = self.stock_df.tail(1)['volatility_avg']
@@ -108,6 +110,7 @@ class pricing_models:
         r_string = input("Set the Risk-Free Rate (type NA for default): ")
         
         if (r_string != "NA"):
+
             try:
                 r = int(r_string)
             except:
@@ -120,6 +123,7 @@ class pricing_models:
                     "r": r,
                     "sigma": sigma,
                     "q": 19090909}
+
 
         print(self.stock_df)
 
