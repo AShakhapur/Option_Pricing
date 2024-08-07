@@ -33,14 +33,20 @@ check_opts(tick, st, en)
 ## Importing Data
 ```{r}
 
-apple_series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
+series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
 
-daily_returns <- (dailyReturn(apple_series))
+daily_returns <- (dailyReturn(series))
 
 divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en))
 colnames(divs) <- "dividends"
 
-divs
+stock_identity <- data.frame(
+  Ticker = tick,
+  Start_Date = st,
+  End_Date = en,
+  avg_div = 0
+)
+
 ```
 
 
@@ -49,7 +55,7 @@ divs
 ## Initializing Data
 ```{r}
 
-daily_returns <- data.frame(dailyReturn(apple_series)) %>%
+daily_returns <- data.frame(dailyReturn(series)) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates))
 
@@ -59,7 +65,12 @@ divs <- divs %>%
   summarise(annual_div = sum(`dividends`)) %>%
   rename(years = `year(Dates)`)
 
-apple_df <- as.data.frame(apple_series) %>%
+avg_div <- divs %>%
+  summarise(mean(annual_div))
+
+stock_identity$avg_div <- avg_div
+
+stock_df <- as.data.frame(series) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates)) %>%
   left_join(daily_returns, by = join_by(Dates)) %>%
@@ -67,19 +78,17 @@ apple_df <- as.data.frame(apple_series) %>%
   left_join(divs, by = join_by(years)) %>%
   select(-years)
 
-colnames(apple_df)[2] <- "Open"
-colnames(apple_df)[3] <- "High"
-colnames(apple_df)[4] <- "Low"
-colnames(apple_df)[5] <- "Close"
-colnames(apple_df)[6] <- "Volume"
-colnames(apple_df)[7] <- "Adjusted"
+colnames(stock_df)[2] <- "Open"
+colnames(stock_df)[3] <- "High"
+colnames(stock_df)[4] <- "Low"
+colnames(stock_df)[5] <- "Close"
+colnames(stock_df)[6] <- "Volume"
+colnames(stock_df)[7] <- "Adjusted"
 
-
-apple_df
 ```
 ## Data Processing
 ```{r}
-apple_df <- apple_df %>% 
+stock_df <- stock_df %>% 
   group_by(year(Dates)) %>%
   mutate(sd_returns = sd(daily.returns)) %>%
   mutate(volatility = sd_returns*sqrt(252)) %>%
@@ -87,23 +96,27 @@ apple_df <- apple_df %>%
   select(-'year(Dates)') %>%
   mutate(volatility_avg = mean(volatility))
 
-apple_df
+stock_df
 ```
+
+
 
 
 ## Data Views
 ```{r}
-apple_df %>%
+
+stock_df %>%
   ggplot() +
   geom_histogram(aes(x = daily.returns), color = 'black', fill = 'blue') +
   theme_grey() +
   ggtitle('Histogram of Daily Returns over Selected Period')
 
-apple_df %>%
+
+stock_df %>%
   ggplot() +
   geom_line(aes(x = Dates, y = Close)) + 
   theme_grey() +
-  ggtitle('Scatterplot of Apple Close Prices over Selected Period') 
+  ggtitle('Scatterplot of Apple Close Prices over Selected Period')
 
 ```
 
@@ -112,8 +125,11 @@ apple_df %>%
 
 wd <- getwd()
 
-filename <- paste0(wd, "/stock_df.csv")
-write.csv(apple_df, filename, row.names = F)
+stock_df_filename <- paste0(wd, "/stock_df.csv")
+write.csv(stock_df, stock_df_filename, row.names = F)
+
+stock_identity_filename <- paste0(wd, "/stock_identity.csv")
+write.csv(stock_identity, stock_identity_filename, row.names = F)
 
 ```
 

@@ -6,6 +6,7 @@ import numpy as np
 from scipy.stats import norm
 import sys as sys
 from datetime import datetime
+from datetime import timedelta
 
 
 # Class Definition
@@ -33,6 +34,7 @@ class pricing_models:
         #imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
 
         self.black_scholes = self.__eval__(bs_string)
+
         #self.binomial = self.__eval__(bi_string)
         #self.monte_carlo = self.__eval__(mo_string)
         #self.implicit_bayesian = self.__eval__(imp_string)
@@ -42,6 +44,8 @@ class pricing_models:
         try:
             self.stock_df = pd.read_csv("stock_df.csv")
             self.stock_df['Dates'] = pd.to_datetime(self.stock_df['Dates'])
+
+            self.stock_identity = pd.read_csv("stock_identity.csv")
         except:
             print("\nNo Stock Dataframe Present\n")
 
@@ -83,10 +87,14 @@ class pricing_models:
 
         var_dict = self.__setup_bs__()
 
+
+
+
     def __setup_bs__(self):
 
-        S = self.stock_df.tail(1)['Close']
-        sigma = self.stock_df.tail(1)['volatility_avg']
+
+        S = self.stock_df.tail(1)['Close'].item()
+        sigma = self.stock_df.tail(1)['volatility_avg'].item()
 
         r = 0.0415
         K = int(input("Set the Strike Price: "))
@@ -98,37 +106,69 @@ class pricing_models:
 
         try:
             date_time = datetime.strptime(date_string, date_format)
-
         except:
             #print(date_time + " " + self.stock_df['Dates'].max())
             #print("exception " + date_string)
             sys.exit('Invalid DateTime')
 
+        duration = date_time - datetime.strptime(self.stock_identity['End_Date'][0], date_format)
+        
+        difference_in_years = (duration.days + duration.seconds/86400)/365.2425
+
+        T = difference_in_years
+
+        if (difference_in_years <= 0):
+            print(difference_in_years)
+            sys.exit('Invalid DateTime (Before Close Period)')
 
         r_string = input("Set the Risk-Free Rate (type NA for default): ")
         
         if (r_string != "NA"):
+
             try:
                 r = int(r_string)
             except:
                 sys.exit('Invalid Risk-Free Rate Value')
 
+
+        q = self.stock_identity['avg_div'][0]
+
         
         var_dict = {"S": S, 
                     "K": K, 
-                    "T": date_time,
+                    "T": T,
                     "r": r,
                     "sigma": sigma,
-                    "q": 19090909}
-
-        print(self.stock_df)
-
+                    "q": q}
         
+        return var_dict
 
 
+    def __calc_bs__(self, var_dict):
+
+        S = var_dict["S"]
+        K = var_dict["K"]
+        T = var_dict["T"]
+        r = var_dict["r"]
+        q = var_dict["q"]
+        sigma = var_dict["sigma"]
+
+
+
+        return 1
+    
+    def __bs_call__(self, S, K, T, r, q, sigma):
         
+        return 1
+    
+    def __bs_put__(self, S, K, T, r, q, sigma):
+        return 1
 
     
+
+        
+
+
 def driver():
     
     pricer = pricing_models()
