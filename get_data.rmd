@@ -105,14 +105,22 @@ stock_df
 ## Data Views
 ```{r}
 
+<<<<<<< HEAD
 stock_df %>%
+=======
+apple_df %>%
+>>>>>>> f741a3b208ab9bfb00d8d14bdc9a0c8b26b14600
   ggplot() +
   geom_histogram(aes(x = daily.returns), color = 'black', fill = 'blue') +
   theme_grey() +
   ggtitle('Histogram of Daily Returns over Selected Period')
 
 
+<<<<<<< HEAD
 stock_df %>%
+=======
+apple_df %>%
+>>>>>>> f741a3b208ab9bfb00d8d14bdc9a0c8b26b14600
   ggplot() +
   geom_line(aes(x = Dates, y = Close)) + 
   theme_grey() +

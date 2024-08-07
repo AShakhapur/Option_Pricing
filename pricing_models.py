@@ -88,6 +88,7 @@ class pricing_models:
         var_dict = self.__setup_bs__()
 
 
+<<<<<<< HEAD
 
 
     def __setup_bs__(self):
@@ -95,6 +96,13 @@ class pricing_models:
 
         S = self.stock_df.tail(1)['Close'].item()
         sigma = self.stock_df.tail(1)['volatility_avg'].item()
+=======
+    def __setup_bs__(self):
+
+
+        S = self.stock_df.tail(1)['Close']
+        sigma = self.stock_df.tail(1)['volatility_avg']
+>>>>>>> f741a3b208ab9bfb00d8d14bdc9a0c8b26b14600
 
         r = 0.0415
         K = int(input("Set the Strike Price: "))
@@ -139,7 +147,15 @@ class pricing_models:
                     "T": T,
                     "r": r,
                     "sigma": sigma,
+<<<<<<< HEAD
                     "q": q}
+=======
+                    "q": 19090909}
+
+
+        print(self.stock_df)
+
+>>>>>>> f741a3b208ab9bfb00d8d14bdc9a0c8b26b14600
         
         return var_dict
 
