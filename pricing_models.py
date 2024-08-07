@@ -125,9 +125,8 @@ class pricing_models:
         r_string = input("Set the Risk-Free Rate (type NA for default): ")
         
         if (r_string != "NA"):
-
             try:
-                r = int(r_string)
+                r = float(r_string)
             except:
                 sys.exit('Invalid Risk-Free Rate Value')
 
@@ -168,21 +167,15 @@ class pricing_models:
     
     def __bs_call__(self, S, K, T, r, q, sigma):
             
-        d1 = (np.log(S / K) + (r - q + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
-        d2 = (np.log(S / K) + (r - q - 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
-        
-        call = (S * np.exp(-q * T) * si.norm.cdf(d1, 0.0, 1.0) - K * np.exp(-r * T) * si.norm.cdf(d2, 0.0, 1.0))
-
-        return call
+        d1 = (np.log(S/K) + (r - q + sigma**2/2)*T) / (sigma*np.sqrt(T))
+        d2 = d1 - sigma* np.sqrt(T)
+        return S*np.exp(-q*T) * norm.cdf(d1) - K * np.exp(-r*T)* norm.cdf(d2)
     
     def __bs_put__(self, S, K, T, r, q, sigma):
 
-        d1 = (np.log(S / K) + (r - q + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
-        d2 = (np.log(S / K) + (r - q - 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
-        
-        put = (K * np.exp(-r * T) * si.norm.cdf(-d2, 0.0, 1.0) - S * np.exp(-q * T) * si.norm.cdf(-d1, 0.0, 1.0))
-        
-        return put
+        d1 = (np.log(S/K) + (r - q + sigma**2/2)*T) / (sigma*np.sqrt(T))
+        d2 = d1 - sigma* np.sqrt(T)
+        return K*np.exp(-r*T)*norm.cdf(-d2) - S*np.exp(-q*T)*norm.cdf(-d1)
 
     
 
