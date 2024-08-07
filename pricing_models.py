@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
+import scipy.stats as si
 import sys as sys
 from datetime import datetime
 from datetime import timedelta
@@ -86,6 +87,7 @@ class pricing_models:
         print("\nRunning Black_Scholes_Merton Pricing Algorithm\n")
 
         var_dict = self.__setup_bs__()
+        self.__calc_bs__(var_dict)
 
 
 
@@ -145,7 +147,6 @@ class pricing_models:
         
         return var_dict
 
-
     def __calc_bs__(self, var_dict):
 
         S = var_dict["S"]
@@ -155,16 +156,33 @@ class pricing_models:
         q = var_dict["q"]
         sigma = var_dict["sigma"]
 
+        put = self.__bs_put__(S, K, T, r, q, sigma)
+        call = self.__bs_call__(S, K, T, r, q, sigma)
 
+        print("Call Price is " + str(call) + "\n")
+        print("Put Price is " + str(put) + ".\n")
 
-        return 1
+        print(str(S) + " " + str(K) + " " + str(T) + str(r) + " " + str(q) + " " + str(sigma))
+
+        return
     
     def __bs_call__(self, S, K, T, r, q, sigma):
+            
+        d1 = (np.log(S / K) + (r - q + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+        d2 = (np.log(S / K) + (r - q - 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
         
-        return 1
+        call = (S * np.exp(-q * T) * si.norm.cdf(d1, 0.0, 1.0) - K * np.exp(-r * T) * si.norm.cdf(d2, 0.0, 1.0))
+
+        return call
     
     def __bs_put__(self, S, K, T, r, q, sigma):
-        return 1
+
+        d1 = (np.log(S / K) + (r - q + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+        d2 = (np.log(S / K) + (r - q - 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+        
+        put = (K * np.exp(-r * T) * si.norm.cdf(-d2, 0.0, 1.0) - S * np.exp(-q * T) * si.norm.cdf(-d1, 0.0, 1.0))
+        
+        return put
 
     
 
