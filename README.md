@@ -76,7 +76,7 @@ The Implicit Bayesian Strategy aims to use a Bayesian approach to determine opti
 
 Currently, the code operates through console input. Users are prompted to input parameters such as asset price, strike price, time to expiration, risk-free rate, and volatility. The results are then displayed in the console. Future updates will include more sophisticated interfaces and expanded functionality.
 
-To get started, run the `pricing_models.py` script and follow the on-screen prompts.
+To get started, run the `get_data.rmd` script and follow the on-screen prompts. Then run the `pricing_models.py` script and follow the on-screen prompts here as well.
 
 ## Additional Information
 
