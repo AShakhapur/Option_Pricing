@@ -37,14 +37,15 @@ series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to
 
 daily_returns <- (dailyReturn(series))
 
-divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en))
-colnames(divs) <- "dividends"
+divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en)) %>%
+  rownames_to_column("Dates") %>%
+  rename("Dividend" = 2)
 
 stock_identity <- data.frame(
   Ticker = tick,
   Start_Date = st,
   End_Date = en,
-  avg_div = 0
+  div_yield_percentage = 0
 )
 
 ```
@@ -60,32 +61,32 @@ daily_returns <- data.frame(dailyReturn(series)) %>%
   mutate(Dates = ymd(Dates))
 
 divs <- divs %>%
-  rownames_to_column(var = "Dates") %>%
   group_by(year(Dates)) %>%
-  summarise(annual_div = sum(`dividends`)) %>%
-  rename(years = `year(Dates)`)
+  summarise(Dividend = sum(Dividend)) %>%
+  mutate(year =`year(Dates)`)
 
-avg_div <- divs %>%
-  summarise(mean(annual_div))
 
-stock_identity$avg_div <- avg_div
+stock_df <- as.data.frame(series) 
 
-stock_df <- as.data.frame(series) %>%
+colnames(stock_df)[1] <- "Open"
+colnames(stock_df)[2] <- "High"
+colnames(stock_df)[3] <- "Low"
+colnames(stock_df)[4] <- "Close"
+colnames(stock_df)[5] <- "Volume"
+colnames(stock_df)[6] <- "Adjusted"
+
+stock_df <- stock_df %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates)) %>%
   left_join(daily_returns, by = join_by(Dates)) %>%
-  mutate(years = year(Dates)) %>%
-  left_join(divs, by = join_by(years)) %>%
-  select(-years)
-
-colnames(stock_df)[2] <- "Open"
-colnames(stock_df)[3] <- "High"
-colnames(stock_df)[4] <- "Low"
-colnames(stock_df)[5] <- "Close"
-colnames(stock_df)[6] <- "Volume"
-colnames(stock_df)[7] <- "Adjusted"
+  mutate(year = year(Dates)) %>%
+  left_join(divs, by = join_by(year)) %>%
+  mutate(div_yield = Dividend / `Close`) %>%
+  mutate(div_yield_percentage = div_yield * 100) %>%
+  select(-`year(Dates)`, -`div_yield`) 
 
 ```
+
 ## Data Processing
 ```{r}
 stock_df <- stock_df %>% 
@@ -132,6 +133,10 @@ stock_identity_filename <- paste0(wd, "/stock_identity.csv")
 write.csv(stock_identity, stock_identity_filename, row.names = F)
 
 ```
+
+
+
+
 
 
 

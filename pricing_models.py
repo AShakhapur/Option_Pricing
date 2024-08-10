@@ -30,13 +30,12 @@ class pricing_models:
     def __get_options__(self): 
 
         bs_string = input("Would you like to run Black_Scholes Pricing (Y/N)\n")
-        #bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
+        bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
         #mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
         #imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
 
         self.black_scholes = self.__eval__(bs_string)
-
-        #self.binomial = self.__eval__(bi_string)
+        self.binomial = self.__eval__(bi_string)
         #self.monte_carlo = self.__eval__(mo_string)
         #self.implicit_bayesian = self.__eval__(imp_string)
 
@@ -60,9 +59,11 @@ class pricing_models:
 
         if (self.black_scholes):
             self.__run_bs__()
-        else:
-            exit(0)
+
+        if (self.binomial):
+            self.__run_bi__()
     
+
     def __run_bs__(self):
 
         #S = Asset_Price
@@ -88,8 +89,6 @@ class pricing_models:
 
         var_dict = self.__setup_bs__()
         self.__calc_bs__(var_dict)
-
-
 
     def __setup_bs__(self):
 
@@ -131,7 +130,7 @@ class pricing_models:
                 sys.exit('Invalid Risk-Free Rate Value')
 
 
-        q = self.stock_identity['avg_div'][0]
+        q = self.stock_identity['div_yield_percentage'][0]
 
         
         var_dict = {"S": S, 
@@ -142,7 +141,7 @@ class pricing_models:
                     "q": q}
 
 
-        print(self.stock_df)
+        #print(self.stock_df)
         
         return var_dict
 
@@ -161,21 +160,30 @@ class pricing_models:
         print("Call Price is " + str(call) + "\n")
         print("Put Price is " + str(put) + ".\n")
 
-        print(str(S) + " " + str(K) + " " + str(T) + str(r) + " " + str(q) + " " + str(sigma))
+        print(str(S) + " " + str(K) + " " + str(T) + " " + str(r) + " " + str(q) + " " + str(sigma))
 
         return
     
     def __bs_call__(self, S, K, T, r, q, sigma):
-            
-        d1 = (np.log(S/K) + (r - q + sigma**2/2)*T) / (sigma*np.sqrt(T))
-        d2 = d1 - sigma* np.sqrt(T)
-        return S*np.exp(-q*T) * norm.cdf(d1) - K * np.exp(-r*T)* norm.cdf(d2)
-    
-    def __bs_put__(self, S, K, T, r, q, sigma):
+
+        N = norm.cdf
 
         d1 = (np.log(S/K) + (r - q + sigma**2/2)*T) / (sigma*np.sqrt(T))
         d2 = d1 - sigma* np.sqrt(T)
-        return K*np.exp(-r*T)*norm.cdf(-d2) - S*np.exp(-q*T)*norm.cdf(-d1)
+        return S*np.exp(-q*T) * N(d1) - K * np.exp(-r*T)* N(d2)
+    
+    def __bs_put__(self, S, K, T, r, q, sigma):
+
+        N = norm.cdf
+
+        d1 = (np.log(S/K) + (r - q + sigma**2/2)*T) / (sigma*np.sqrt(T))
+        d2 = d1 - sigma* np.sqrt(T)
+        return K*np.exp(-r*T)*N(-d2) - S*np.exp(-q*T)*N(-d1)
+
+
+    def __run_bi__(self):
+
+        return 0
 
     
 

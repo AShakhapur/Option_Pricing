@@ -1,8 +1,8 @@
 
 get_options <- function(){
   ticker = readline(prompt = "Ticker Option: ")
-  start_date = readline(prompt = "Start Date (ymd): ")
-  end_date = readline(prompt = "End Date (ymd): ")
+  start_date = readline(prompt = "Start Date (yyyy-mm-dd): ")
+  end_date = readline(prompt = "End Date (yyyy-mm-dd): ")
   
   opts_list <- data.frame(Ticker = ticker, Start = start_date, End = end_date)
   
