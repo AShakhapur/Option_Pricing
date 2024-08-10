@@ -1,2 +1,2 @@
-"Ticker","Start_Date","End_Date","avg_div"
-"AAPL","2010-01-01","2024-01-01",0
+"Ticker","Start_Date","End_Date","div_yield_percentage"
+"AAPL","2020-01-01","2023-01-01",0.700377165625457

@@ -41,7 +41,7 @@ divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en
   rownames_to_column("Dates") %>%
   rename("Dividend" = 2)
 
-stock_identity <- data.frame(
+stock_identity <- c(
   Ticker = tick,
   Start_Date = st,
   End_Date = en,
@@ -49,6 +49,7 @@ stock_identity <- data.frame(
 )
 
 ```
+
 
 
 # Building  Data Frame
@@ -60,11 +61,11 @@ daily_returns <- data.frame(dailyReturn(series)) %>%
   rownames_to_column("Dates") %>%
   mutate(Dates = ymd(Dates))
 
-divs <- divs %>%
+divs <- data.frame(divs) %>%
   group_by(year(Dates)) %>%
   summarise(Dividend = sum(Dividend)) %>%
-  mutate(year =`year(Dates)`)
-
+  mutate(year =`year(Dates)`) %>%
+  ungroup()
 
 stock_df <- as.data.frame(series) 
 
@@ -80,10 +81,12 @@ stock_df <- stock_df %>%
   mutate(Dates = ymd(Dates)) %>%
   left_join(daily_returns, by = join_by(Dates)) %>%
   mutate(year = year(Dates)) %>%
-  left_join(divs, by = join_by(year)) %>%
+  left_join(divs, by = join_by(year == year)) %>%
   mutate(div_yield = Dividend / `Close`) %>%
-  mutate(div_yield_percentage = div_yield * 100) %>%
-  select(-`year(Dates)`, -`div_yield`) 
+  mutate(div_yield_percentage = div_yield * 100)
+
+stock_identity$div_yield_percentage <- tail(stock_df$div_yield_percentage, 1)[[1]]
+
 
 ```
 
@@ -123,7 +126,7 @@ stock_df %>%
 
 # Saving Datasets
 ```{r}
-
+stock_identity <- data.frame(stock_identity)
 wd <- getwd()
 
 stock_df_filename <- paste0(wd, "/stock_df.csv")
@@ -133,6 +136,13 @@ stock_identity_filename <- paste0(wd, "/stock_identity.csv")
 write.csv(stock_identity, stock_identity_filename, row.names = F)
 
 ```
+
+```{r}
+
+```
+
+
+
 
 
 

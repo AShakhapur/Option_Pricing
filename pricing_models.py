@@ -130,8 +130,7 @@ class pricing_models:
                 sys.exit('Invalid Risk-Free Rate Value')
 
 
-        q = self.stock_identity['div_yield_percentage'][0]
-
+        q = self.stock_identity['div_yield_percentage'][0]/100
         
         var_dict = {"S": S, 
                     "K": K, 
@@ -180,11 +179,25 @@ class pricing_models:
         d2 = d1 - sigma* np.sqrt(T)
         return K*np.exp(-r*T)*N(-d2) - S*np.exp(-q*T)*N(-d1)
 
-
     def __run_bi__(self):
 
+        self.__setup_bi__()
         return 0
 
+
+    def __setup_bi__(self):
+
+        var_dict = self.__setup_bs__()
+
+        try:
+            n = int(input("Set Binomial Tree Height"))
+        except:
+            sys.exit("Invalid Tree Height")
+
+        var_dict['n'] = n
+        
+
+        return 0
     
 
         
