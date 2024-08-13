@@ -179,11 +179,12 @@ class pricing_models:
         d2 = d1 - sigma* np.sqrt(T)
         return K*np.exp(-r*T)*N(-d2) - S*np.exp(-q*T)*N(-d1)
 
+
+
     def __run_bi__(self):
 
         self.__setup_bi__()
         return 0
-
 
     def __setup_bi__(self):
 
