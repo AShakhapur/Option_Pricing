@@ -137,6 +137,16 @@ write.csv(stock_identity, stock_identity_filename, row.names = F)
 
 ```
 
+```{r}
+
+wd <- getwd()
+print(wd)
+
+```
+
+
+
+
 
 
 

@@ -182,7 +182,6 @@ class pricing_models:
         return K*np.exp(-r*T)*N(-d2) - S*np.exp(-q*T)*N(-d1)
 
 
-
     def __run_bi__(self):
 
         # Built specifically for American options
@@ -195,13 +194,25 @@ class pricing_models:
 
         var_dict = self.__setup_bs__()
 
-
         try:
             n = int(input("Set Binomial Tree Height: "))
         except:
             sys.exit("Invalid Tree Height")
 
+        try: 
+            am_str = input("What Option Model should the pricing be? (America/European)")
+        except:
+            sys.exit("Invalid Region Status")
+
+        if (am_str == "America"):
+            american = True
+        elif (am_str == "European"):
+            american = False
+        else:
+            sys.exit("Invalid Region Status")
+
         var_dict['n'] = n
+        var_dict['american'] = american
 
         return var_dict
     
@@ -214,27 +225,28 @@ class pricing_models:
         q = var_dict['q']
         sigma = var_dict['sigma']
         n = var_dict['n']
+        american = var_dict['american']
 
         delta = var_dict['T'] / var_dict['n']
 
         u = np.exp(sigma * np.sqrt(delta))
         d = np.exp(-sigma * np.sqrt(delta))
-        p = (np.exp(r * delta) - d) / (u -d)
+        p = (np.exp((r - q) * delta) - d) / (u - d)
 
         var_dict['delta'] = delta
         var_dict['u'] = u
         var_dict['d'] = d
         var_dict['p'] = p
 
-        call = self.__bi_call__(var_dict)
-        put = self.__bi_put__(var_dict)
+        call = self.__bi_call__(var_dict, american)
+        put = self.__bi_put__(var_dict, american)
 
         print("Call price is: " + str(call))
         print("Put price is: " + str(put))
 
         return 1
     
-    def __bi_call__(self, var_dict):
+    def __bi_call__(self, var_dict, american):
 
         S = var_dict['S']
         K = var_dict['K']
@@ -254,13 +266,14 @@ class pricing_models:
         for j in range(N - 1, -1, -1):
             for i in range(j + 1):
                 option_values[i] = np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1])
-                option_values[i] = np.maximum(option_values[i], ST[i] - K)
+                if (american):
+                    option_values[i] = np.maximum(option_values[i], ST[i] - K)
 
         option_price = option_values[0]
 
         return option_price
     
-    def __bi_put__(self, var_dict):
+    def __bi_put__(self, var_dict, american):
 
         S = var_dict['S']
         K = var_dict['K']
@@ -280,13 +293,13 @@ class pricing_models:
         for j in range(N - 1, -1, -1):
             for i in range(j + 1):
                 option_values[i] = np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1])
-                option_values[i] = np.maximum(option_values[i], K - ST[i])
+                if (american):
+                    option_values[i] = np.maximum(option_values[i], K - ST[i])
         
         option_value = option_values[0]
 
-        return option_values[0]
+        return option_value
         
-
 
 def driver():
     
