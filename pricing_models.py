@@ -62,6 +62,8 @@ class pricing_models:
 
         if (self.binomial):
             self.__run_bi__()
+
+        return 0
     
 
     def __run_bs__(self):
@@ -183,30 +185,113 @@ class pricing_models:
 
     def __run_bi__(self):
 
-        self.__setup_bi__()
+        # Built specifically for American options
+
+        var_dict = self.__setup_bi__()
+        self.__calc_bi__(var_dict)
         return 0
 
     def __setup_bi__(self):
 
         var_dict = self.__setup_bs__()
 
+
         try:
-            n = int(input("Set Binomial Tree Height"))
+            n = int(input("Set Binomial Tree Height: "))
         except:
             sys.exit("Invalid Tree Height")
 
         var_dict['n'] = n
-        
 
-        return 0
+        return var_dict
     
+    def __calc_bi__(self, var_dict):
 
+        S = var_dict['S']
+        K = var_dict['q']
+        T = var_dict['T']
+        r = var_dict['r']
+        q = var_dict['q']
+        sigma = var_dict['sigma']
+        n = var_dict['n']
+
+        delta = var_dict['T'] / var_dict['n']
+
+        u = np.exp(sigma * np.sqrt(delta))
+        d = np.exp(-sigma * np.sqrt(delta))
+        p = (np.exp(r * delta) - d) / (u -d)
+
+        var_dict['delta'] = delta
+        var_dict['u'] = u
+        var_dict['d'] = d
+        var_dict['p'] = p
+
+        call = self.__bi_call__(var_dict)
+        put = self.__bi_put__(var_dict)
+
+        print("Call price is: " + str(call))
+        print("Put price is: " + str(put))
+
+        return 1
+    
+    def __bi_call__(self, var_dict):
+
+        S = var_dict['S']
+        K = var_dict['K']
+        N = var_dict['n']
+        u = var_dict['u']
+        p = var_dict['p']
+        r = var_dict['r']
+        dt = var_dict['delta']
+        d = var_dict['d']
+
+        ST = np.zeros(N + 1)
+        for i in range(N + 1):
+            ST[i] = S * (u ** (N - i)) * (d ** i)
+
+        option_values = np.maximum(0, ST - K)
+
+        for j in range(N - 1, -1, -1):
+            for i in range(j + 1):
+                option_values[i] = np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1])
+                option_values[i] = np.maximum(option_values[i], ST[i] - K)
+
+        option_price = option_values[0]
+
+        return option_price
+    
+    def __bi_put__(self, var_dict):
+
+        S = var_dict['S']
+        K = var_dict['K']
+        N = var_dict['n']
+        u = var_dict['u']
+        p = var_dict['p']
+        r = var_dict['r']
+        dt = var_dict['delta']
+        d = var_dict['d']
+
+        ST = np.zeros(N + 1)
+        for i in range(N + 1):
+            ST[i] = S * (u ** (N - i)) * (d ** i)
+
+        option_values = np.maximum(0, K - ST)
+
+        for j in range(N - 1, -1, -1):
+            for i in range(j + 1):
+                option_values[i] = np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1])
+                option_values[i] = np.maximum(option_values[i], K - ST[i])
+        
+        option_value = option_values[0]
+
+        return option_values[0]
         
 
 
 def driver():
     
     pricer = pricing_models()
+
     pricer.run_pricing()
 
     
