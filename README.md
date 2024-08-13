@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project aims to provide users with a straightforward way to utilize various option pricing strategies using the asset of their choice. The primary focus is educational, helping to build an understanding of these strategies and the programming logic required to turn them into a functional application.
+This project aims to provide users with a straightforward way to utilize various option pricing strategies using the asset of your choice. The goal was educational to further my understanding of these techniques.
 
 ## Project Goals
 
@@ -30,8 +30,8 @@ The Black-Scholes model is currently implemented. It provides a closed-form solu
 The Binomial Pricing Model constructs a binomial tree to represent possible future stock prices. By working backward through the tree, it calculates the option price. This model can handle various types of options and is flexible in terms of modeling different conditions.
 
 **Current State:**
-- In progress.
-- Will provide a flexible approach for pricing various types of options.
+- Currently Functional.
+- Further Testing required to ensure validity.
 
 **Limitations:**
 - Computationally intensive for a large number of steps.
@@ -68,7 +68,7 @@ The Implicit Bayesian Strategy aims to use a Bayesian approach to determine opti
 - **`README.md`**: Project overview and instructions.
 - **`stock_df.csv`**: CSV file containing historical stock data.
 - **`stock_identity.csv`**: CSV file containing stock metadata.
-- **`testing.ipynb`**: Jupyter notebook for testing implementations.
+- **`testing.ipynb`**: Jupyter notebook for quick testing.
 - **`data_funcs.r`**: R script with functions related to data handling.
 - **`testing.py`**: Python script for testing the implementations.
 
