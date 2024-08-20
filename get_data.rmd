@@ -1,41 +1,69 @@
+---
+title: "Data Gathering"
+author: "Abhay Shakhapur"
+fontsize: 8pt
+geometry: margin=1cm
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    df_print: kable
+header-includes:
+  - \usepackage{graphicx}
+---
+
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 100)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
 
 # Libraries
-```{r}
+```{r libraries}
 library(tidyverse)
+library(lubridate)
 library(quantmod)
 library(getopt)
+library(data.table)
+library(xts)
+library(timeSeries)
 library(ggplot2)
+library(zoo)
 
-source('data_funcs.r')
+source('data_funcs.R')
 ```
 
 
 # Data Gathering
 
 ## Data Import Options
-```{r}
-opts_list <- get_options()
+```{r import-opts}
+#opts_list <- get_options()
 ```
 
 ## Checking Options
-```{r}
-opts_list 
+```{r check-opts}
+#opts_list 
 
-tick <- opts_list[1]
-st <- opts_list[2]
-en <- opts_list[3]
+#tick <- opts_list[1]
+#st <- opts_list[2]
+#en <- opts_list[3]
 
-check_opts(tick, st, en)
+#check_opts(tick, st, en)
 ```
 
 
-
 ## Importing Data
-```{r}
+```{r import-data}
+
+tick = "AAPL"
+st = "2020-01-01"
+en = "2024-01-01"
 
 series <- getSymbols(Symbols = tick, src='yahoo', auto.assign=FALSE, from=st, to=en)
 
-daily_returns <- (dailyReturn(series))
+daily_returns <- (dailyReturn(as.xts(series)))
 
 divs <- data.frame(getDividends(Symbol = tick, src = 'yahoo', from = st, to = en)) %>%
   rownames_to_column("Dates") %>%
@@ -50,12 +78,10 @@ stock_identity <- c(
 
 ```
 
-
-
 # Building  Data Frame
 
 ## Initializing Data
-```{r}
+```{r init-data}
 
 daily_returns <- data.frame(dailyReturn(series)) %>%
   rownames_to_column("Dates") %>%
@@ -91,7 +117,7 @@ stock_identity$div_yield_percentage <- tail(stock_df$div_yield_percentage, 1)[[1
 ```
 
 ## Data Processing
-```{r}
+```{r data-process}
 stock_df <- stock_df %>% 
   group_by(year(Dates)) %>%
   mutate(sd_returns = sd(daily.returns)) %>%
@@ -100,14 +126,50 @@ stock_df <- stock_df %>%
   select(-'year(Dates)') %>%
   mutate(volatility_avg = mean(volatility))
 
-stock_df
 ```
 
 
 
 
-## Data Views
+# Data Views
+
 ```{r}
+stock_df
+stock_identity
+```
+## Volume
+```{r}
+stock_df %>%
+  ggplot() + 
+  geom_col(aes(x = Dates, y = Volume), color = 'blue') +
+  theme_grey() +
+  ggtitle('Chart of Volume over Time')
+
+```
+## Stock Price with Moving Average
+```{r}
+stock_df$ma_50 <- SMA(stock_df$Adjusted, n=50)
+stock_df$ma_200 <- SMA(stock_df$Adjusted, n=200)
+
+colors <- c("Adjusted" = "blue", "50-Day Average" = "red", "200-Day Average" = "orange")
+
+stock_df %>%
+  ggplot(aes(x = Dates)) + 
+  geom_line(aes(y = Adjusted, color = "Adjusted")) + 
+  geom_line(aes(y = ma_50, color = "50-Day Average")) + 
+  geom_line(aes(y = ma_200, color = "200-Day Average")) +
+  labs(
+    color = "Legend"
+  ) +
+  scale_color_manual(values = colors) +
+  ggtitle("Adjusted Stock Price and Moving Averages over Time")
+```
+
+
+
+
+## Daily Returns
+```{r data-views}
 
 stock_df %>%
   ggplot() +
@@ -125,22 +187,22 @@ stock_df %>%
 ```
 
 # Saving Datasets
-```{r}
-stock_identity <- data.frame(stock_identity)
-wd <- getwd()
+```{r save-data}
+#stock_identity <- data.frame(stock_identity)
+#wd <- getwd()
 
-stock_df_filename <- paste0(wd, "/stock_df.csv")
-write.csv(stock_df, stock_df_filename, row.names = F)
+#stock_df_filename <- paste0(wd, "/stock_df.csv")
+#write.csv(stock_df, stock_df_filename, row.names = F)
 
-stock_identity_filename <- paste0(wd, "/stock_identity.csv")
-write.csv(stock_identity, stock_identity_filename, row.names = F)
+#stock_identity_filename <- paste0(wd, "/stock_identity.csv")
+#write.csv(stock_identity, stock_identity_filename, row.names = F)
 
 ```
 
 ```{r}
 
-wd <- getwd()
-print(wd)
+#wd <- getwd()
+#print(wd)
 
 ```
 

@@ -4,10 +4,9 @@
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-import scipy.stats as si
 import sys as sys
 from datetime import datetime
-from datetime import timedelta
+import subprocess
 
 
 # Class Definition

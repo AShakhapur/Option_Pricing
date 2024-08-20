@@ -1,7 +1,4 @@
 
-
-
-
 opts_list <- get_options()
 
 tick <- opts_list[1]
