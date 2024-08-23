@@ -6,8 +6,7 @@ import numpy as np
 from scipy.stats import norm
 import sys as sys
 from datetime import datetime
-import subprocess
-
+import argparse
 
 # Class Definition
 
@@ -16,27 +15,65 @@ class pricing_models:
     def __init__(self):
         # Class Constructor
         print("Hello, this is the pricing_models.py script by Abhay Shakhapur. \nThis script will create a pricing model class based on user input. \nIt will then use the options provided and the dataset made by get_data.rmd to\nuse different pricing algorithms to price the specified assets. Any feedback \nwould be greatly appreciated.\n")
+
         self.__get_options__()
         self.__load_data__()
+        
 
-    def __eval__(self, str):
+    def eval_input(str):
+        return str.strip().upper() == 'Y'
 
-        if (str == 'Y'):
-            return True
-        else:
-            return False
 
     def __get_options__(self): 
 
         bs_string = input("Would you like to run Black_Scholes Pricing (Y/N)\n")
         bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
-        #mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
-        #imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
+        mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
+        imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
 
-        self.black_scholes = self.__eval__(bs_string)
-        self.binomial = self.__eval__(bi_string)
-        #self.monte_carlo = self.__eval__(mo_string)
-        #self.implicit_bayesian = self.__eval__(imp_string)
+        self.black_scholes = self.eval_input(bs_string)
+        self.binomial = self.eval_input(bi_string)
+        self.monte_carlo = self.__eval__(mo_string)
+        self.implicit_bayesian = self.__eval__(imp_string)
+
+        self.pricing_methods = {
+            'black-scholes': self.black_scholes,
+            'binomial': self.binomial,
+            'monte-carlo': self.monte_carlo,
+            'implicit-bayes': self.implicit_bayesian
+        }
+
+    def __get_options__(self):
+
+        parser = argparse.ArgumentParser(
+            prog = "pricing_models.py",
+            description="Option Method Selection",
+            epilog = "--End of Help"
+            )
+        
+        parser.add_argument('--bs', action='store_true', help="Run Black-Scholes Pricing")
+        parser.add_argument('--bi', action='store_true', help="Run Binomial Pricing")
+        parser.add_argument('--mc', action='store_true', help="Run Monte-Carlo Pricing")
+        parser.add_argument('--ip', action='store_true' , help="Run Implicit Bayesian Pricing")
+
+
+        return parser.parse_args()
+    
+    def run_pricing(self):
+
+        args = self.__get_options__()
+
+        if (args.bs):
+            self.__run_bs__()
+        if (args.bi):
+            self.__run_bi__()
+        if (args.mc):
+            print("Not Ready Yet")
+        if (args.ip):
+            print("Not Ready Yet")
+
+
+
 
     def __load_data__(self):
 
@@ -54,16 +91,38 @@ class pricing_models:
         except:
             print("\nNo Security Dataframe Present\n")
 
-    def run_pricing(self):
+        return
 
-        if (self.black_scholes):
-            self.__run_bs__()
+    
+    def create_report(self, create = True):
 
-        if (self.binomial):
-            self.__run_bi__()
+        if (create):
+            print("Report Generation Beginning.\n")
+
+            self.__generate_report__()
 
         return 0
     
+    def __generate_report__(self):
+
+        # Start Report with data summaries from R
+            # Show data ranges and stock information
+        # Then continue by showing options selected
+        # Start Presenting Black-Scholes
+            # Create Disclaimer as start (European + Assumptions)
+            # Describe Technique
+            # Present Final Calculated variables + explanations on calculations
+            # Show Final call and put calculations  
+        # Start Presenting Binomial
+            # Create Disclaimer as start (Assumptions)
+            # Describe Technique
+            # Present Final Calculate variables + explanations
+            # Show Final call + put prices
+        #if (self.black_scholes):
+            
+        
+        return 0
+
 
     def __run_bs__(self):
 
@@ -291,8 +350,11 @@ class pricing_models:
 
         for j in range(N - 1, -1, -1):
             for i in range(j + 1):
+
                 option_values[i] = np.exp(-r * dt) * (p * option_values[i] + (1 - p) * option_values[i + 1])
+
                 if (american):
+
                     option_values[i] = np.maximum(option_values[i], K - ST[i])
         
         option_value = option_values[0]
@@ -300,7 +362,8 @@ class pricing_models:
         return option_value
         
 
-def driver():
+
+def main():
     
     pricer = pricing_models()
 
@@ -308,7 +371,7 @@ def driver():
 
     
 
-driver()
+main()
 
 
 

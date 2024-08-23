@@ -1,0 +1,7 @@
+Hello, this is the pricing_models.py script by Abhay Shakhapur. 
+This script will create a pricing model class based on user input. 
+It will then use the options provided and the dataset made by get_data.rmd to
+use different pricing algorithms to price the specified assets. Any feedback 
+would be greatly appreciated.
+
+Would you like to run Black_Scholes Pricing (Y/N)
