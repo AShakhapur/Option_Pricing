@@ -363,15 +363,7 @@ class pricing_models:
         
 
 
-def main():
-    
-    pricer = pricing_models()
 
-    pricer.run_pricing()
-
-    
-
-main()
 
 
 
