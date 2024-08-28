@@ -1,11 +1,13 @@
+# Driver File
+
 from pricing_methods import *
 
 
 def main():
 
-    pricer = pricing_models()
+    Pricer = PricingModel()
 
-    pricer.run_pricing()
+    Pricer.run_pricing()
 
     return 0
 

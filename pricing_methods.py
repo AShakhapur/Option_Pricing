@@ -1,4 +1,4 @@
-# Pricing Models Script
+# Code File
 
 # Libraries
 import pandas as pd
@@ -10,71 +10,39 @@ import argparse
 
 # Class Definition
 
-class pricing_models:
+class PricingModel:
 
     def __init__(self):
         # Class Constructor
         print("Hello, this is the pricing_models.py script by Abhay Shakhapur. \nThis script will create a pricing model class based on user input. \nIt will then use the options provided and the dataset made by get_data.rmd to\nuse different pricing algorithms to price the specified assets. Any feedback \nwould be greatly appreciated.\n")
 
-        self.__get_options__()
-        self.__load_data__()
-        
-
-    def eval_input(str):
-        return str.strip().upper() == 'Y'
-
-
-    def __get_options__(self): 
-
-        bs_string = input("Would you like to run Black_Scholes Pricing (Y/N)\n")
-        bi_string = input("Would you like to run Binomial Pricing (Y/N)\n")
-        mo_string = input("Would you like to run Monte-Carlo Pricing (Y/N)\n")
-        imp_string = input("Would you like to run Implicity Bayesian Pricing (Y/N)\n")
-
-        self.black_scholes = self.eval_input(bs_string)
-        self.binomial = self.eval_input(bi_string)
-        self.monte_carlo = self.__eval__(mo_string)
-        self.implicit_bayesian = self.__eval__(imp_string)
-
-        self.pricing_methods = {
-            'black-scholes': self.black_scholes,
-            'binomial': self.binomial,
-            'monte-carlo': self.monte_carlo,
-            'implicit-bayes': self.implicit_bayesian
-        }
+        self.args = self.__get_options__()
+        self.__load_data__()       
 
     def __get_options__(self):
 
+
+
         parser = argparse.ArgumentParser(
+
             prog = "pricing_models.py",
-            description="Option Method Selection",
-            epilog = "--End of Help"
+            description="This program runs the selected option pricing model based on user input.\n Atleast one option must be selected.",
+            epilog = "--End of Help--"
             )
         
-        parser.add_argument('--bs', action='store_true', help="Run Black-Scholes Pricing")
-        parser.add_argument('--bi', action='store_true', help="Run Binomial Pricing")
-        parser.add_argument('--mc', action='store_true', help="Run Monte-Carlo Pricing")
-        parser.add_argument('--ip', action='store_true' , help="Run Implicit Bayesian Pricing")
+        parser.add_argument('-bs', "--black-scholes", action='store_true', help="Run Black-Scholes Pricing")
+        parser.add_argument('-bi', "--binomial", action='store_true', help="Run Binomial Pricing")
+        parser.add_argument('-mc', "--monte-carlo", action='store_true', help="Run Monte-Carlo Pricing")
+        parser.add_argument('-ip', "--implicit_bayesian", action='store_true' , help="Run Implicit Bayesian Pricing")
+        parser.add_argument('foo', nargs='+')
 
+        if (len(sys.argv)==1):
+            parser.print_help(sys.stderr)
+            sys.stderr.write("\nYOU HAVE NOT SELECTED ANY ARGUMENTS\n")
+            sys.exit(1)
 
         return parser.parse_args()
     
-    def run_pricing(self):
-
-        args = self.__get_options__()
-
-        if (args.bs):
-            self.__run_bs__()
-        if (args.bi):
-            self.__run_bi__()
-        if (args.mc):
-            print("Not Ready Yet")
-        if (args.ip):
-            print("Not Ready Yet")
-
-
-
-
     def __load_data__(self):
 
         try:
@@ -85,46 +53,41 @@ class pricing_models:
         except:
             print("\nNo Stock Dataframe Present\n")
 
-
         try:
             self.security_df = pd.read_csv("securities.csv")
         except:
             print("\nNo Security Dataframe Present\n")
 
-        return
-
-    
-    def create_report(self, create = True):
-
-        if (create):
-            print("Report Generation Beginning.\n")
-
-            self.__generate_report__()
-
         return 0
     
-    def __generate_report__(self):
+    def run_pricing(self):
 
-        # Start Report with data summaries from R
-            # Show data ranges and stock information
-        # Then continue by showing options selected
-        # Start Presenting Black-Scholes
-            # Create Disclaimer as start (European + Assumptions)
-            # Describe Technique
-            # Present Final Calculated variables + explanations on calculations
-            # Show Final call and put calculations  
-        # Start Presenting Binomial
-            # Create Disclaimer as start (Assumptions)
-            # Describe Technique
-            # Present Final Calculate variables + explanations
-            # Show Final call + put prices
-        #if (self.black_scholes):
-            
+
+        if (self.args.bs):
+            model = BlackScholesModel()
+        elif (self.args.bi):
+            model = BinomialModel()
+        elif (self.args.mc):
+            print("Not Ready Yet")
+            sys.exit(1)
+        elif (self.args.ip):
+            print("Not Ready Yet")
+            sys.exit(1)
+
+        model.run_pricing()
+
+        sys.exit(0)
         
-        return 0
+
+class BlackScholesModel(PricingModel):
+
+    def __init__(self):
+
+        super().__load_data__()
+        self.var_dict = self.__setup_bs__()
 
 
-    def __run_bs__(self):
+    def run_pricing(self):
 
         #S = Asset_Price
             # Closing Price
@@ -147,8 +110,9 @@ class pricing_models:
 
         print("\nRunning Black_Scholes_Merton Pricing Algorithm\n")
 
-        var_dict = self.__setup_bs__()
-        self.__calc_bs__(var_dict)
+        self.__calc_bs__()
+
+        return 0
 
     def __setup_bs__(self):
 
@@ -204,14 +168,14 @@ class pricing_models:
         
         return var_dict
 
-    def __calc_bs__(self, var_dict):
+    def __calc_bs__(self):
 
-        S = var_dict["S"]
-        K = var_dict["K"]
-        T = var_dict["T"]
-        r = var_dict["r"]
-        q = var_dict["q"]
-        sigma = var_dict["sigma"]
+        S = self.var_dict["S"]
+        K = self.var_dict["K"]
+        T = self.var_dict["T"]
+        r = self.var_dict["r"]
+        q = self.var_dict["q"]
+        sigma = self.var_dict["sigma"]
 
         put = self.__bs_put__(S, K, T, r, q, sigma)
         call = self.__bs_call__(S, K, T, r, q, sigma)
@@ -221,7 +185,7 @@ class pricing_models:
 
         print(str(S) + " " + str(K) + " " + str(T) + " " + str(r) + " " + str(q) + " " + str(sigma))
 
-        return
+        return 0
     
     def __bs_call__(self, S, K, T, r, q, sigma):
 
@@ -240,13 +204,12 @@ class pricing_models:
         return K*np.exp(-r*T)*N(-d2) - S*np.exp(-q*T)*N(-d1)
 
 
-    def __run_bi__(self):
+class BinomialModel(PricingModel):
 
-        # Built specifically for American options
+    def __init__(self):
 
-        var_dict = self.__setup_bi__()
-        self.__calc_bi__(var_dict)
-        return 0
+        super().__load_data()
+        self.var_dict = self.__setup_bi__()
 
     def __setup_bi__(self):
 
@@ -274,46 +237,51 @@ class pricing_models:
 
         return var_dict
     
-    def __calc_bi__(self, var_dict):
+    def run_pricing(self):
+        
+        self.__calc_bi__(self)
 
-        S = var_dict['S']
-        K = var_dict['q']
-        T = var_dict['T']
-        r = var_dict['r']
-        q = var_dict['q']
-        sigma = var_dict['sigma']
-        n = var_dict['n']
-        american = var_dict['american']
+    def __calc_bi__(self):
 
-        delta = var_dict['T'] / var_dict['n']
+        S = self.var_dict['S']
+        K = self.var_dict['q']
+        T = self.var_dict['T']
+        r = self.var_dict['r']
+        q = self.var_dict['q']
+        sigma = self.var_dict['sigma']
+        n = self.var_dict['n']
+        american = self.var_dict['american']
+
+        delta = self.var_dict['T'] / self.var_dict['n']
 
         u = np.exp(sigma * np.sqrt(delta))
         d = np.exp(-sigma * np.sqrt(delta))
         p = (np.exp((r - q) * delta) - d) / (u - d)
 
-        var_dict['delta'] = delta
-        var_dict['u'] = u
-        var_dict['d'] = d
-        var_dict['p'] = p
+        self.var_dict['delta'] = delta
+        self.var_dict['u'] = u
+        self.var_dict['d'] = d
+        self.var_dict['p'] = p
 
-        call = self.__bi_call__(var_dict, american)
-        put = self.__bi_put__(var_dict, american)
+        call = self.__bi_call__(self.var_dict, american)
+        put = self.__bi_put__(self.var_dict, american)
 
         print("Call price is: " + str(call))
         print("Put price is: " + str(put))
 
         return 1
     
-    def __bi_call__(self, var_dict, american):
+    def __bi_call__(self):
 
-        S = var_dict['S']
-        K = var_dict['K']
-        N = var_dict['n']
-        u = var_dict['u']
-        p = var_dict['p']
-        r = var_dict['r']
-        dt = var_dict['delta']
-        d = var_dict['d']
+        S = self.var_dict['S']
+        K = self.var_dict['K']
+        N = self.var_dict['n']
+        u = self.var_dict['u']
+        p = self.var_dict['p']
+        r = self.var_dict['r']
+        dt = self.var_dict['delta']
+        d = self.var_dict['d']
+        american = self.var_dict['american']
 
         ST = np.zeros(N + 1)
         for i in range(N + 1):
@@ -331,16 +299,17 @@ class pricing_models:
 
         return option_price
     
-    def __bi_put__(self, var_dict, american):
+    def __bi_put__(self):
 
-        S = var_dict['S']
-        K = var_dict['K']
-        N = var_dict['n']
-        u = var_dict['u']
-        p = var_dict['p']
-        r = var_dict['r']
-        dt = var_dict['delta']
-        d = var_dict['d']
+        S = self.var_dict['S']
+        K = self.var_dict['K']
+        N = self.var_dict['n']
+        u = self.var_dict['u']
+        p = self.var_dict['p']
+        r = self.var_dict['r']
+        dt = self.var_dict['delta']
+        d = self.var_dict['d']
+        american = self.var_dict['america ']
 
         ST = np.zeros(N + 1)
         for i in range(N + 1):
@@ -360,11 +329,3 @@ class pricing_models:
         option_value = option_values[0]
 
         return option_value
-        
-
-
-
-
-
-
-    
