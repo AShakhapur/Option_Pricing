@@ -30,16 +30,11 @@ class PricingModel:
             epilog = "--End of Help--"
             )
         
-        parser.add_argument('-bs', "--black-scholes", action='store_true', help="Run Black-Scholes Pricing")
+        parser.add_argument('-bs', "--black_scholes", action='store_true', help="Run Black-Scholes Pricing")
         parser.add_argument('-bi', "--binomial", action='store_true', help="Run Binomial Pricing")
-        parser.add_argument('-mc', "--monte-carlo", action='store_true', help="Run Monte-Carlo Pricing")
+        parser.add_argument('-mc', "--monte_carlo", action='store_true', help="Run Monte-Carlo Pricing")
         parser.add_argument('-ip', "--implicit_bayesian", action='store_true' , help="Run Implicit Bayesian Pricing")
-        parser.add_argument('foo', nargs='+')
-
-        if (len(sys.argv)==1):
-            parser.print_help(sys.stderr)
-            sys.stderr.write("\nYOU HAVE NOT SELECTED ANY ARGUMENTS\n")
-            sys.exit(1)
+                
 
         return parser.parse_args()
     
@@ -62,15 +57,14 @@ class PricingModel:
     
     def run_pricing(self):
 
-
-        if (self.args.bs):
+        if (self.args.black_scholes):
             model = BlackScholesModel()
-        elif (self.args.bi):
+        elif (self.args.binomial):
             model = BinomialModel()
-        elif (self.args.mc):
+        elif (self.args.monte_carlo):
             print("Not Ready Yet")
             sys.exit(1)
-        elif (self.args.ip):
+        elif (self.args.implicit_bayesian):
             print("Not Ready Yet")
             sys.exit(1)
 
@@ -86,11 +80,10 @@ class BlackScholesModel(PricingModel):
         super().__load_data__()
         self.var_dict = self.__setup_bs__()
 
-
     def run_pricing(self):
 
         #S = Asset_Price
-            # Closing Price
+            # Spot Price
 
         #K = Strike_Price
             # Set Strike Price
@@ -112,17 +105,20 @@ class BlackScholesModel(PricingModel):
 
         self.__calc_bs__()
 
-        return 0
+        return
 
     def __setup_bs__(self):
-
 
         S = self.stock_df.tail(1)['Close'].item()
         sigma = self.stock_df.tail(1)['volatility_avg'].item()
 
         r = 0.0415
-        K = int(input("Set the Strike Price: "))
 
+        K = int(input("Set the Strike Price: "))
+        try:
+            K = int(K)
+        except:
+            False
 
         date_format = "%Y-%m-%d"
         date_string = input("Set the Expiration Date (yyyy-mm-dd): ")
@@ -185,7 +181,7 @@ class BlackScholesModel(PricingModel):
 
         print(str(S) + " " + str(K) + " " + str(T) + " " + str(r) + " " + str(q) + " " + str(sigma))
 
-        return 0
+        return 
     
     def __bs_call__(self, S, K, T, r, q, sigma):
 
@@ -208,12 +204,60 @@ class BinomialModel(PricingModel):
 
     def __init__(self):
 
-        super().__load_data()
+        super().__load_data__()
         self.var_dict = self.__setup_bi__()
 
     def __setup_bi__(self):
 
-        var_dict = self.__setup_bs__()
+        S = self.stock_df.tail(1)['Close'].item()
+        sigma = self.stock_df.tail(1)['volatility_avg'].item()
+
+        r = 0.0415
+
+        K = int(input("Set the Strike Price: "))
+        try:
+            K = int(K)
+        except:
+            False
+
+        date_format = "%Y-%m-%d"
+        date_string = input("Set the Expiration Date (yyyy-mm-dd): ")
+
+
+        try:
+            date_time = datetime.strptime(date_string, date_format)
+        except:
+            #print(date_time + " " + self.stock_df['Dates'].max())
+            #print("exception " + date_string)
+            sys.exit('Invalid DateTime')
+
+        duration = date_time - datetime.strptime(self.stock_identity['End_Date'][0], date_format)
+        
+        difference_in_years = (duration.days + duration.seconds/86400)/365.2425
+
+        T = difference_in_years
+
+        if (difference_in_years <= 0):
+            print(difference_in_years)
+            sys.exit('Invalid DateTime (Before Close Period)')
+
+        r_string = input("Set the Risk-Free Rate (type NA for default): ")
+        
+        if (r_string != "NA"):
+            try:
+                r = float(r_string)
+            except:
+                sys.exit('Invalid Risk-Free Rate Value')
+
+
+        q = self.stock_identity['div_yield_percentage'][0]/100
+        
+        var_dict = {"S": S, 
+                    "K": K, 
+                    "T": T,
+                    "r": r,
+                    "sigma": sigma,
+                    "q": q}
 
         try:
             n = int(input("Set Binomial Tree Height: "))
@@ -221,11 +265,11 @@ class BinomialModel(PricingModel):
             sys.exit("Invalid Tree Height")
 
         try: 
-            am_str = input("What Option Model should the pricing be? (America/European)")
+            am_str = input("What Option Model should the pricing be (American/European)? ")
         except:
             sys.exit("Invalid Region Status")
 
-        if (am_str == "America"):
+        if (am_str == "American"):
             american = True
         elif (am_str == "European"):
             american = False
@@ -238,8 +282,12 @@ class BinomialModel(PricingModel):
         return var_dict
     
     def run_pricing(self):
+
+        print("\nRunning Binomial Pricing Algorithm\n")
         
-        self.__calc_bi__(self)
+        self.__calc_bi__()
+
+        return
 
     def __calc_bi__(self):
 
@@ -263,8 +311,8 @@ class BinomialModel(PricingModel):
         self.var_dict['d'] = d
         self.var_dict['p'] = p
 
-        call = self.__bi_call__(self.var_dict, american)
-        put = self.__bi_put__(self.var_dict, american)
+        call = self.__bi_call__()
+        put = self.__bi_put__()
 
         print("Call price is: " + str(call))
         print("Put price is: " + str(put))
@@ -309,7 +357,7 @@ class BinomialModel(PricingModel):
         r = self.var_dict['r']
         dt = self.var_dict['delta']
         d = self.var_dict['d']
-        american = self.var_dict['america ']
+        american = self.var_dict['american']
 
         ST = np.zeros(N + 1)
         for i in range(N + 1):
@@ -329,3 +377,122 @@ class BinomialModel(PricingModel):
         option_value = option_values[0]
 
         return option_value
+
+
+class MonteCarlo(PricingModel):
+
+    def __init__(self):
+
+        self.var_dict = self.__setup_mc__()
+
+    def __setup_mc__(self):
+
+        S = self.stock_df.tail(1)['Close'].item()
+        sigma = self.stock_df.tail(1)['volatility_avg'].item()
+
+        r = 0.0415
+
+        K = int(input("Set the Strike Price: "))
+        try:
+            K = int(K)
+        except:
+            False
+
+        date_format = "%Y-%m-%d"
+        date_string = input("Set the Expiration Date (yyyy-mm-dd): ")
+
+
+        try:
+            date_time = datetime.strptime(date_string, date_format)
+        except:
+            #print(date_time + " " + self.stock_df['Dates'].max())
+            #print("exception " + date_string)
+            sys.exit('Invalid DateTime')
+
+        duration = date_time - datetime.strptime(self.stock_identity['End_Date'][0], date_format)
+        
+        difference_in_years = (duration.days + duration.seconds/86400)/365.2425
+
+        T = difference_in_years
+
+        if (difference_in_years <= 0):
+            print(difference_in_years)
+            sys.exit('Invalid DateTime (Before Close Period)')
+
+        r_string = input("Set the Risk-Free Rate (type NA for default): ")
+        
+        if (r_string != "NA"):
+            try:
+                r = float(r_string)
+            except:
+                sys.exit('Invalid Risk-Free Rate Value')
+
+
+        q = self.stock_identity['div_yield_percentage'][0]/100
+        
+        try:
+            num_sims = int(input("Number of Simulations to Run (): "))
+        except:
+            sys.exit('Invalid Number of Sims')
+
+        try:
+            num_steps = int(input("Number of steps in simulation"))
+        except:
+            sys.exit('Invalid number of steps')
+
+        var_dict = {"S": S, 
+                    "K": K, 
+                    "T": T,
+                    "r": r,
+                    "sigma": sigma,
+                    "q": q,
+                    "nsteps": num_steps,
+                    "nsims": num_sims
+                    }
+
+        var_dict["dt"] = var_dict["T"] / var_dict["nsteps"]
+        var_dict["discount"] = np.exp(-var_dict['r'] * var_dict["T"])
+        
+        return
+
+    def run_pricing(self):
+        print("\nRunning Monte-Carlo Pricing Algorithm (Currently European Only)\n")
+        
+        self.__calc_mc__()
+        return
+
+    def __calc_mc__(self):
+
+        S = self.var_dict['S']
+        K = self.var_dict['q']
+
+        r = self.var_dict['r']
+        q = self.var_dict['q']
+        sigma = self.var_dict['sigma']
+        n = self.var_dict['n']
+
+        nsteps = self.var_dict['nsteps']
+        nsims = self.var_dict['nsims']
+        dt = self.var_dict['dt']
+        discount = self.var_dict['discount']
+
+
+        price_paths = np.zeros((nsims, nsteps + 1))
+        price_paths[:, 0] = S
+
+        for i in range(1, nsteps + 1):
+            z = np.random.standard_normal(nsims)
+            price_paths[:, i] = price_paths[:, i-1] * np.exp((r-q-0.5 * sigma**2)*dt + sigma * np.sqrt(dt) * z)
+        
+        call_pay = np.maximum(price_paths[:, -1] - K, 0)
+        put_pay = np.maximum(K - price_paths[:, -1], 0)
+
+        call = discount * np.mean(call_pay)
+        put = discount * np.mean(put_pay)
+
+        print("Call price is: " + str(call))
+        print("Put price is: " + str(put))
+
+        return
+    
+    
