@@ -62,8 +62,7 @@ class PricingModel:
         elif (self.args.binomial):
             model = BinomialModel()
         elif (self.args.monte_carlo):
-            print("Not Ready Yet")
-            sys.exit(1)
+            model = MonteCarlo()
         elif (self.args.implicit_bayesian):
             print("Not Ready Yet")
             sys.exit(1)
@@ -383,6 +382,7 @@ class MonteCarlo(PricingModel):
 
     def __init__(self):
 
+        super().__load_data__()
         self.var_dict = self.__setup_mc__()
 
     def __setup_mc__(self):
@@ -436,7 +436,7 @@ class MonteCarlo(PricingModel):
             sys.exit('Invalid Number of Sims')
 
         try:
-            num_steps = int(input("Number of steps in simulation"))
+            num_steps = int(input("Number of steps in simulation: "))
         except:
             sys.exit('Invalid number of steps')
 
@@ -453,7 +453,7 @@ class MonteCarlo(PricingModel):
         var_dict["dt"] = var_dict["T"] / var_dict["nsteps"]
         var_dict["discount"] = np.exp(-var_dict['r'] * var_dict["T"])
         
-        return
+        return var_dict
 
     def run_pricing(self):
         print("\nRunning Monte-Carlo Pricing Algorithm (Currently European Only)\n")
@@ -469,7 +469,7 @@ class MonteCarlo(PricingModel):
         r = self.var_dict['r']
         q = self.var_dict['q']
         sigma = self.var_dict['sigma']
-        n = self.var_dict['n']
+
 
         nsteps = self.var_dict['nsteps']
         nsims = self.var_dict['nsims']
